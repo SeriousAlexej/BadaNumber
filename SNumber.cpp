@@ -137,6 +137,22 @@ void SNumber::Output(std::ostream& to) const
     to << endl;
 }
 
+string SNumber::ToString() const
+{
+    string num = "";
+    if(negative)
+        num += '-';
+
+    if(numBefPoint.empty())
+        num += '0';
+    else
+        num += numBefPoint;
+
+    if(!numAftPoint.empty())
+        num += "." + numAftPoint;
+    return num;
+}
+
 const string& SNumber::GetNumsBeforePoint() const
 {
     return numBefPoint;
@@ -300,14 +316,10 @@ SNumber SNumber::operator+(const SNumber& other) const
     SNumber oth = other;
     int maxBPlen = max(oth.numBefPoint.size(), numBefPoint.size()) + 1;
     int maxAPlen = max(oth.numAftPoint.size(), numAftPoint.size());
-    for(unsigned i=0; i<maxBPlen - numBefPoint.size(); ++i)
-        upper.numBefPoint = "0" + upper.numBefPoint;
-    for(unsigned i=0; i<maxBPlen - other.numBefPoint.size(); ++i)
-        oth.numBefPoint = "0" + oth.numBefPoint;
-    for(unsigned i=0; i<maxAPlen - numAftPoint.size(); ++i)
-        upper.numAftPoint += '0';
-    for(unsigned i=0; i<maxAPlen - other.numAftPoint.size(); ++i)
-        oth.numAftPoint += '0';
+    upper.numBefPoint = string(maxBPlen - numBefPoint.size(), '0') + upper.numBefPoint;
+    oth.numBefPoint = string(maxBPlen - other.numBefPoint.size(), '0') + oth.numBefPoint;
+    upper.numAftPoint += string(maxAPlen - numAftPoint.size(), '0');
+    oth.numAftPoint += string(maxAPlen - other.numAftPoint.size(), '0');
 
     int exponent = -maxAPlen;
 
@@ -436,10 +448,11 @@ SNumber SNumber::MultUChar(unsigned char m) const
 
 void SNumber::Trim()
 {
-    while(numBefPoint.size() > 0 && numBefPoint[0] == '0')
-        numBefPoint = numBefPoint.substr(1);
-    while(numAftPoint.size() > 0 && numAftPoint[numAftPoint.size()-1] == '0')
-        numAftPoint = numAftPoint.substr(0, numAftPoint.size()-1);
+    int i, l;
+    for(i=0, l=numBefPoint.size(); i<l && numBefPoint[i] == '0'; ++i);
+    numBefPoint = numBefPoint.substr(i);
+    for(i=0, l=numAftPoint.size(); i<l && numAftPoint[l-1-i] == '0'; ++i);
+    numAftPoint = numAftPoint.substr(0, l-i);
 }
 
 void SNumber::ApplyExponent10(int exp)
@@ -471,14 +484,10 @@ SNumber SNumber::Sub(const SNumber& other) const
     SNumber oth = other;
     int maxBPlen = max(oth.numBefPoint.size(), numBefPoint.size());
     int maxAPlen = max(oth.numAftPoint.size(), numAftPoint.size());
-    for(unsigned i=0; i<maxBPlen - numBefPoint.size(); ++i)
-        upper.numBefPoint = "0" + upper.numBefPoint;
-    for(unsigned i=0; i<maxBPlen - other.numBefPoint.size(); ++i)
-        oth.numBefPoint = "0" + oth.numBefPoint;
-    for(unsigned i=0; i<maxAPlen - numAftPoint.size(); ++i)
-        upper.numAftPoint += '0';
-    for(unsigned i=0; i<maxAPlen - other.numAftPoint.size(); ++i)
-        oth.numAftPoint += '0';
+    upper.numBefPoint = string(maxBPlen - numBefPoint.size(), '0') + upper.numBefPoint;
+    oth.numBefPoint = string(maxBPlen - other.numBefPoint.size(), '0') + oth.numBefPoint;
+    upper.numAftPoint += string(maxAPlen - numAftPoint.size(), '0');
+    oth.numAftPoint += string(maxAPlen - other.numAftPoint.size(), '0');
 
     int exponent = -maxAPlen;
 
@@ -536,14 +545,10 @@ bool SNumber::LessAbs(const SNumber& other) const
     SNumber oth = other;
     int maxBPlen = max(oth.numBefPoint.size(), numBefPoint.size());
     int maxAPlen = max(oth.numAftPoint.size(), numAftPoint.size());
-    for(unsigned i=0; i<maxBPlen - numBefPoint.size(); ++i)
-        upper.numBefPoint = "0" + upper.numBefPoint;
-    for(unsigned i=0; i<maxBPlen - other.numBefPoint.size(); ++i)
-        oth.numBefPoint = "0" + oth.numBefPoint;
-    for(unsigned i=0; i<maxAPlen - numAftPoint.size(); ++i)
-        upper.numAftPoint += '0';
-    for(unsigned i=0; i<maxAPlen - other.numAftPoint.size(); ++i)
-        oth.numAftPoint += '0';
+    upper.numBefPoint = string(maxBPlen - numBefPoint.size(), '0') + upper.numBefPoint;
+    oth.numBefPoint = string(maxBPlen - other.numBefPoint.size(), '0') + oth.numBefPoint;
+    upper.numAftPoint += string(maxAPlen - numAftPoint.size(), '0');
+    oth.numAftPoint += string(maxAPlen - other.numAftPoint.size(), '0');
 
     if(upper.numBefPoint < oth.numBefPoint)
         return true;

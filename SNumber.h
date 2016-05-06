@@ -13,6 +13,8 @@ public:
 
     void Output(std::ostream& to) const;
 
+    std::string ToString() const;
+
     const std::string& GetNumsBeforePoint() const;
     const std::string& GetNumsAfterPoint() const;
 
