@@ -205,8 +205,23 @@ SNumber SNumber::operator/(const SNumber& other) const
                 break;
         }
     }
+    if(!divident.numBefPoint.empty())
+    {
+        dividentABias = divident.numBefPoint.size();
+    }
+    else if(!divident.numAftPoint.empty())
+    {
+        dividentABias = 0;
+        for(int i=0; i<divident.numAftPoint.size(); ++i)
+        {
+            if(divident.numAftPoint[i] == '0')
+                dividentABias--;
+            else
+                break;
+        }
+    }
 
-    int a = max(0, (int)divident.numBefPoint.size() - divisorABias - 1);
+    int a = max(0, dividentABias - divisorABias - 1);
     SNumber numWhole = SNumber::Create(1, a);
     SNumber tmp = divisor;
     tmp.ApplyExponent10(a);
