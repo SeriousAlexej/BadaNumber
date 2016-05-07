@@ -18,6 +18,14 @@ SNumber SNumber::Create(int value, int exp)
     return ret;
 }
 
+SNumber SNumber::Create(const string& input)
+{
+    SNumber n;
+    if(n.Parse(input))
+        return n;
+    return SNumber();
+}
+
 bool SNumber::Parse(const string& input)
 {
     numAftPoint = "";
@@ -181,14 +189,33 @@ SNumber SNumber::operator/(const SNumber& other) const
 
     divident.negative = divisor.negative = false;
 
-    int a = max(0, (int)divident.numBefPoint.size() - (int)divisor.numBefPoint.size() - 1);
+    int divisorABias, dividentABias;
+    if(!divisor.numBefPoint.empty())
+    {
+        divisorABias = divisor.numBefPoint.size();
+    }
+    else
+    {
+        divisorABias = 0;
+        for(int i=0; i<divisor.numAftPoint.size(); ++i)
+        {
+            if(divisor.numAftPoint[i] == '0')
+                divisorABias--;
+            else
+                break;
+        }
+    }
+
+    int a = max(0, (int)divident.numBefPoint.size() - divisorABias - 1);
     SNumber numWhole = SNumber::Create(1, a);
     SNumber tmp = divisor;
     tmp.ApplyExponent10(a);
+    tmp.Trim();
     while(a >= 0)
     {
         SNumber tmp2 = divisor;
         tmp2.ApplyExponent10(a);
+        tmp2.Trim();
         tmp2 += tmp;
         if(tmp2 > divident)
         {
@@ -213,14 +240,36 @@ SNumber SNumber::operator/(const SNumber& other) const
     const int maxDigits = 100;
     for(int i=0; i<maxDigits; ++i)
     {
-        a = max(0, (int)divident.numBefPoint.size() - (int)divisor.numBefPoint.size() - 1);
+
+        if(!divident.numBefPoint.empty())
+        {
+            dividentABias = divident.numBefPoint.size();
+        }
+        else if(!divident.numAftPoint.empty())
+        {
+            dividentABias = 0;
+            for(int i=0; i<divident.numAftPoint.size(); ++i)
+            {
+                if(divident.numAftPoint[i] == '0')
+                    dividentABias--;
+                else
+                    break;
+            }
+        }
+        else
+        {
+            break;
+        }
+        a = max(0, dividentABias - divisorABias - 1);
         numWhole = SNumber::Create(1, a);
         tmp = divisor;
         tmp.ApplyExponent10(a);
+        tmp.Trim();
         while(a >= 0)
         {
             SNumber tmp2 = divisor;
             tmp2.ApplyExponent10(a);
+            tmp2.Trim();
             tmp2 += tmp;
             if(tmp2 > divident)
             {

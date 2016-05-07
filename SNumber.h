@@ -8,6 +8,7 @@ public:
     SNumber() {}
 
     static SNumber Create(int value, int exp);
+    static SNumber Create(const std::string& input);
 
     bool Parse(const std::string& input);
 
