@@ -1,8 +1,13 @@
 #include "SNumber.h"
-#include <iostream>
-#include <algorithm>
+#include <stdexcept>
 
 using namespace std;
+
+ostream& operator<<(ostream& os, const SNumber& num)
+{
+    os << num.ToString();
+    return os;
+}
 
 SNumber SNumber::Create(int value, int exp)
 {
@@ -61,7 +66,6 @@ bool SNumber::Parse(const string& input)
             }
             else
             {
-                cout << "Incorrect input!\n";
                 return false;
             }
             readPhase = R_BEF_POINT;
@@ -74,7 +78,6 @@ bool SNumber::Parse(const string& input)
                 readPhase = R_AFT_POINT;
                 break;
             }
-            cout << "Incorrect input!\n";
             return false;
 
         case R_AFT_POINT:
@@ -88,7 +91,6 @@ bool SNumber::Parse(const string& input)
                 readPhase = R_EXPONENT;
                 break;
             }
-            cout << "Incorrect input!\n";
             return false;
 
         case R_EXPONENT:
@@ -96,11 +98,17 @@ bool SNumber::Parse(const string& input)
                 int numExp;
                 string::size_type sz;
                 string leftover = input.substr(i);
-                numExp = stoi(leftover,&sz);
+                try
+                {
+                    numExp = stoi(leftover,&sz);
+                }
+                catch(...)
+                {
+                    return false;
+                }
                 if(sz != leftover.size())
                 {
-                    cout << "Incorrect input!\n";
-                    return 1;
+                    return false;
                 }
                 ApplyExponent10(numExp);
                 i = lim;
@@ -108,13 +116,11 @@ bool SNumber::Parse(const string& input)
                 break;
             }
         default:
-            cout << "wat\n";
             return false;
         }
     }
     if(readPhase != R_DONE)
     {
-        cout << "Incorrect input!\n";
         return false;
     }
     Trim();
@@ -123,26 +129,6 @@ bool SNumber::Parse(const string& input)
         negative = false;
     }
     return true;
-}
-
-void SNumber::Output(std::ostream& to) const
-{
-    if(negative)
-        to << '-';
-
-    if(numBefPoint.empty())
-        to << '0';
-    else
-        to << numBefPoint;
-
-    to << '.';
-
-    if(numAftPoint.empty())
-        to << '0';
-    else
-        to << numAftPoint;
-
-    to << endl;
 }
 
 string SNumber::ToString() const
@@ -176,7 +162,7 @@ SNumber SNumber::operator/(const SNumber& other) const
     if(other.IsZero() || IsZero())
     {
         if(other.IsZero())
-            cout << "R U MAD?\n";
+            throw invalid_argument("Division by zero");
         return SNumber();
     }
     SNumber divisor = other;
@@ -189,15 +175,14 @@ SNumber SNumber::operator/(const SNumber& other) const
 
     divident.negative = divisor.negative = false;
 
-    int divisorABias, dividentABias;
+    int divisorABias=0, dividentABias=0;
     if(!divisor.numBefPoint.empty())
     {
         divisorABias = divisor.numBefPoint.size();
     }
     else
     {
-        divisorABias = 0;
-        for(int i=0; i<divisor.numAftPoint.size(); ++i)
+        for(unsigned i=0; i<divisor.numAftPoint.size(); ++i)
         {
             if(divisor.numAftPoint[i] == '0')
                 divisorABias--;
@@ -212,7 +197,7 @@ SNumber SNumber::operator/(const SNumber& other) const
     else if(!divident.numAftPoint.empty())
     {
         dividentABias = 0;
-        for(int i=0; i<divident.numAftPoint.size(); ++i)
+        for(unsigned i=0; i<divident.numAftPoint.size(); ++i)
         {
             if(divident.numAftPoint[i] == '0')
                 dividentABias--;
@@ -252,7 +237,7 @@ SNumber SNumber::operator/(const SNumber& other) const
     divident.ApplyExponent10(1);
     divident.Trim();
 
-    const int maxDigits = 100;
+    const int maxDigits = max(max(200, (int)divident.numAftPoint.size()), (int)divisor.numAftPoint.size());
     for(int i=0; i<maxDigits; ++i)
     {
 
@@ -263,7 +248,7 @@ SNumber SNumber::operator/(const SNumber& other) const
         else if(!divident.numAftPoint.empty())
         {
             dividentABias = 0;
-            for(int i=0; i<divident.numAftPoint.size(); ++i)
+            for(unsigned i=0; i<divident.numAftPoint.size(); ++i)
             {
                 if(divident.numAftPoint[i] == '0')
                     dividentABias--;
@@ -416,11 +401,59 @@ SNumber SNumber::operator+(const SNumber& other) const
     return ret;
 }
 
+SNumber SNumber::operator^(int power) const
+{
+    SNumber one = SNumber::Create(1, 0);
+    if(power > 0)
+        for(int i=0; i<power; ++i)
+        {
+            one *= (*this);
+        }
+    else if(power < 0)
+        for(int i=0; i<-power; ++i)
+        {
+            one /= (*this);
+        }
+    return one;
+}
+
+SNumber& SNumber::operator^=(int power)
+{
+    (*this) = (*this)^power;
+    return (*this);
+}
+
 SNumber SNumber::operator-(const SNumber& other) const
 {
     SNumber minOther = other;
     minOther.negative = !minOther.negative;
     return (*this) + minOther;
+}
+
+SNumber& SNumber::operator--()
+{
+    (*this) -= SNumber::Create(1, 0);
+    return (*this);
+}
+
+SNumber SNumber::operator--(int)
+{
+    SNumber backup = (*this);
+    (*this) -= SNumber::Create(1, 0);
+    return backup;
+}
+
+SNumber& SNumber::operator++()
+{
+    (*this) += SNumber::Create(1, 0);
+    return (*this);
+}
+
+SNumber SNumber::operator++(int)
+{
+    SNumber backup = (*this);
+    (*this) += SNumber::Create(1, 0);
+    return backup;
 }
 
 SNumber& SNumber::operator+=(const SNumber& other)

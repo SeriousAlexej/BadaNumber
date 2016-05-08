@@ -12,22 +12,27 @@ public:
 
     bool Parse(const std::string& input);
 
-    void Output(std::ostream& to) const;
-
     std::string ToString() const;
 
     const std::string& GetNumsBeforePoint() const;
     const std::string& GetNumsAfterPoint() const;
 
-    SNumber operator/(const SNumber& other) const;
-    SNumber operator*(const SNumber& other) const;
-    SNumber operator+(const SNumber& other) const;
-    SNumber operator-(const SNumber& other) const;
+    SNumber  operator/(const SNumber& other) const;
+    SNumber  operator*(const SNumber& other) const;
+    SNumber  operator+(const SNumber& other) const;
+    SNumber  operator-(const SNumber& other) const;
+    SNumber  operator^(int power) const;
 
     SNumber& operator+=(const SNumber& other);
     SNumber& operator-=(const SNumber& other);
     SNumber& operator*=(const SNumber& other);
     SNumber& operator/=(const SNumber& other);
+    SNumber& operator^=(int power);
+
+    SNumber& operator--();
+    SNumber& operator++();
+    SNumber  operator--(int);
+    SNumber  operator++(int);
 
     bool IsZero() const;
 
@@ -59,5 +64,7 @@ private:
 
     bool LessAbs(const SNumber& other) const;
 };
+
+std::ostream& operator<<(std::ostream& os, const SNumber& num);
 
 #endif // SNUMBER_H_INCLUDED
