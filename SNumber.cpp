@@ -9,26 +9,22 @@ ostream& operator<<(ostream& os, const SNumber& num)
     return os;
 }
 
-SNumber SNumber::Create(int value, int exp)
+SNumber::SNumber(int value, int exp)
 {
-    SNumber ret;
     if(value < 0)
     {
-        ret.negative = true;
+        negative = true;
         value *= -1;
     }
-    ret.numBefPoint = to_string(value);
-    ret.ApplyExponent10(exp);
-    ret.Trim();
-    return ret;
+    numBefPoint = to_string(value);
+    ApplyExponent10(exp);
+    Trim();
 }
 
-SNumber SNumber::Create(const string& input)
+SNumber::SNumber(const string& input)
 {
-    SNumber n;
-    if(n.Parse(input))
-        return n;
-    return SNumber();
+    if(!Parse(input))
+        (*this) = SNumber();
 }
 
 bool SNumber::Parse(const string& input)
@@ -207,7 +203,7 @@ SNumber SNumber::operator/(const SNumber& other) const
     }
 
     int a = max(0, dividentABias - divisorABias - 1);
-    SNumber numWhole = SNumber::Create(1, a);
+    SNumber numWhole = SNumber(1, a);
     SNumber tmp = divisor;
     tmp.ApplyExponent10(a);
     tmp.Trim();
@@ -223,12 +219,12 @@ SNumber SNumber::operator/(const SNumber& other) const
             continue;
         }
         tmp = tmp2;
-        numWhole += SNumber::Create(1, a);
+        numWhole += SNumber(1, a);
     }
     if(tmp > divident)
     {
         tmp -= divisor;
-        numWhole -= SNumber::Create(1, 0);
+        numWhole -= SNumber(1);
     }
 
     quotient.numBefPoint = numWhole.numBefPoint;
@@ -261,7 +257,7 @@ SNumber SNumber::operator/(const SNumber& other) const
             break;
         }
         a = max(0, dividentABias - divisorABias - 1);
-        numWhole = SNumber::Create(1, a);
+        numWhole = SNumber(1, a);
         tmp = divisor;
         tmp.ApplyExponent10(a);
         tmp.Trim();
@@ -277,12 +273,12 @@ SNumber SNumber::operator/(const SNumber& other) const
                 continue;
             }
             tmp = tmp2;
-            numWhole += SNumber::Create(1, a);
+            numWhole += SNumber(1, a);
         }
         if(tmp > divident)
         {
             tmp -= divisor;
-            numWhole -= SNumber::Create(1, 0);
+            numWhole -= SNumber(1);
         }
 
         quotient.numAftPoint += (numWhole.numBefPoint.empty() ? "0" : numWhole.numBefPoint);
@@ -403,7 +399,7 @@ SNumber SNumber::operator+(const SNumber& other) const
 
 SNumber SNumber::operator^(int power) const
 {
-    SNumber one = SNumber::Create(1, 0);
+    SNumber one(1);
     if(power > 0)
         for(int i=0; i<power; ++i)
         {
@@ -430,29 +426,41 @@ SNumber SNumber::operator-(const SNumber& other) const
     return (*this) + minOther;
 }
 
+SNumber SNumber::operator-() const
+{
+    SNumber opp = (*this);
+    opp.negative = !negative;
+    return opp;
+}
+
+SNumber& SNumber::operator+()
+{
+    return *this;
+}
+
 SNumber& SNumber::operator--()
 {
-    (*this) -= SNumber::Create(1, 0);
+    (*this) -= SNumber(1);
     return (*this);
 }
 
 SNumber SNumber::operator--(int)
 {
     SNumber backup = (*this);
-    (*this) -= SNumber::Create(1, 0);
+    (*this) -= SNumber(1);
     return backup;
 }
 
 SNumber& SNumber::operator++()
 {
-    (*this) += SNumber::Create(1, 0);
+    (*this) += SNumber(1);
     return (*this);
 }
 
 SNumber SNumber::operator++(int)
 {
     SNumber backup = (*this);
-    (*this) += SNumber::Create(1, 0);
+    (*this) += SNumber(1);
     return backup;
 }
 

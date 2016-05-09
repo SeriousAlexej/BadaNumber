@@ -6,9 +6,8 @@ struct SNumber
 {
 public:
     SNumber() {}
-
-    static SNumber Create(int value, int exp);
-    static SNumber Create(const std::string& input);
+    SNumber(int value, int exp = 0);
+    SNumber(const std::string& input);
 
     bool Parse(const std::string& input);
 
@@ -28,6 +27,9 @@ public:
     SNumber& operator*=(const SNumber& other);
     SNumber& operator/=(const SNumber& other);
     SNumber& operator^=(int power);
+
+    SNumber  operator-() const;
+    SNumber& operator+();
 
     SNumber& operator--();
     SNumber& operator++();
